@@ -45,7 +45,7 @@ export const EMOTION_LABELS = {
 
 export const SAFETY_TYPE_LABELS = {
   choking: '疑似呛咳',
-  face_covered: '口鼻遮掩',
+  face_covered: '口鼻遮挡',
 };
 
 export const MANUAL_RECORD_LABELS = {

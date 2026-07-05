@@ -16,7 +16,7 @@ export function EmotionPieChart({ hourlyScore }) {
     <section class="panel">
       <div class="panel__title-row">
         <div>
-          <h2>${String(hourlyScore.hour).padStart(2, '0')}:00 情绪构成</h2>
+          <h2>${String(hourlyScore.hour).padStart(2, '0')}:00 情绪小饼图</h2>
           <p>舒适状态指数 ${hourlyScore.score} 分</p>
         </div>
       </div>

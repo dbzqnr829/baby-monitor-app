@@ -1,4 +1,4 @@
-import { ScoreChart } from '../components/ScoreChart.js';
+import { ScoreChart } from '../components/ScoreChart.js?v=20260706-scroll';
 import { EmotionPieChart } from '../components/EmotionPieChart.js?v=20260705-pie';
 
 export function TrendPage(state) {

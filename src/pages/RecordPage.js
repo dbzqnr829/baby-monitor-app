@@ -22,7 +22,7 @@ export function RecordPage(state) {
 
       <section class="record-workspace">
         <form class="record-form" data-action="manual-record-form">
-          <h2>添加${MANUAL_RECORD_LABELS[activeType]}记录</h2>
+          <h2>添加${MANUAL_RECORD_LABELS[activeType]}小脚印</h2>
           <input type="hidden" name="type" value="${activeType}" />
           <label>
             标题
@@ -42,13 +42,13 @@ export function RecordPage(state) {
               <input name="durationMinutes" type="number" min="0" placeholder="可选" />
             </label>
           </div>
-          <button class="button button--primary" type="submit">保存记录</button>
+          <button class="button button--primary" type="submit">做个记号 🚀</button>
         </form>
 
         <section class="panel record-list-panel">
           <div class="panel__title-row">
             <div>
-              <h2>今日${MANUAL_RECORD_LABELS[activeType]}记录</h2>
+              <h2>今日${MANUAL_RECORD_LABELS[activeType]}历史</h2>
             </div>
           </div>
           ${

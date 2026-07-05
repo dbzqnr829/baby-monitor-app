@@ -1,0 +1,929 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>宝贝萌态监测 - 快乐成长版</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #fffbf0; /* 温暖奶黄起司底色 */
+        --surface: #ffffff;
+        --surface-muted: #f9f5eb;
+        --text: #4a3728; /* 浓郁巧克力棕（比纯黑更具亲和力） */
+        --text-muted: #8c7665;
+        --line: #ebdccb; /* 柔和饼干纹理线 */
+        
+        /* 情绪状态 - 卡通明亮糖果色 */
+        --happy: #ffb03b; /* 活力小橙 */
+        --happy-soft: #fff3d6;
+        --calm: #6baed6; /* 晴空小蓝 */
+        --calm-soft: #e2f1f9;
+        --crying: #ff7675; /* 草莓小红 */
+        --crying-soft: #ffebe9;
+        --safety: #fd79a8; /* 蜜桃粉红 */
+        --safety-soft: #fff0f5;
+        
+        /* 功能指标 - 萌系专属 */
+        --feeding: #2ecc71; /* 抹茶绿 */
+        --feeding-soft: #e8f8f5;
+        --sleeping: #9b59b6; /* 薰衣草紫 */
+        --sleeping-soft: #f4ecf7;
+        --pending: #e67e22;
+        --pending-soft: #fdf2e9;
+        --confirmed: #e5dfd8;
+        
+        --shadow-sm: 0 6px 0px rgba(235, 220, 203, 0.6); /* 卡通感片状阴影 */
+        --shadow-md: 0 10px 20px rgba(74, 55, 40, 0.08);
+        
+        /* 优先使用圆润字体 */
+        font-family: ui-rounded, "Hiragino Maru Gothic ProN", Quicksand, "Ubuntu Rounded", "Microsoft YaHei", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: #f4edd9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        color: var(--text);
+      }
+
+      /* 隐藏无线电切换器 */
+      input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* 移动设备外壳适配器 */
+      .phone-container {
+        width: 100%;
+        max-width: 412px;
+        height: 880px;
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 24px 50px rgba(74, 55, 40, 0.15);
+        border: 4px solid var(--text); /* 粗黑边卡通描边感 */
+        border-radius: 32px; /* 超大圆角 */
+      }
+
+      /* 系统级顶部状态栏模拟 */
+      .system-bar {
+        height: 32px;
+        padding: 0 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 13px;
+        font-weight: 800;
+        background: var(--surface);
+        border-bottom: 3px solid var(--text);
+        z-index: 10;
+      }
+
+      /* 应用头部区域 */
+      .app-header {
+        background: #ffeba4; /* 亮眼布丁黄 */
+        padding: 16px 20px;
+        border-bottom: 3px solid var(--text);
+        z-index: 10;
+        position: relative;
+      }
+      .app-header::after {
+        content: "🧸";
+        position: absolute;
+        right: 20px;
+        top: 18px;
+        font-size: 24px;
+      }
+      .app-header .eyebrow {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--text-muted);
+        letter-spacing: 1px;
+      }
+      .app-header h1 {
+        font-size: 24px;
+        font-weight: 900;
+        margin-top: 2px;
+        color: var(--text);
+      }
+
+      /* 主体内容滚动容器 */
+      .app-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 16px 95px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      /* 页面基类切换逻辑 */
+      .screen {
+        display: none;
+        flex-direction: column;
+        gap: 16px;
+        animation: bubbleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      @keyframes bubbleUp {
+        from { opacity: 0; transform: scale(0.96) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+      }
+
+      #nav-today:checked ~ .phone-container #screen-today,
+      #nav-trend:checked ~ .phone-container #screen-trend,
+      #nav-records:checked ~ .phone-container #screen-records,
+      #nav-highlights:checked ~ .phone-container #screen-highlights,
+      #nav-safety:checked ~ .phone-container #screen-safety {
+        display: flex;
+      }
+
+      /* 通用面板与卡片设计样式 */
+      .panel {
+        background: var(--surface);
+        border: 3px solid var(--text);
+        border-radius: 20px; /* 嘟嘟唇般圆润的大圆角 */
+        padding: 16px;
+        box-shadow: var(--shadow-sm);
+      }
+      .panel-title {
+        font-size: 18px;
+        font-weight: 900;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .panel-subtitle {
+        font-size: 13px;
+        color: var(--text-muted);
+        font-weight: bold;
+        margin-top: -6px;
+        margin-bottom: 12px;
+      }
+
+      /* ==================== SCREEN: 今日 ==================== */
+      .hero-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      
+      .state-banner {
+        padding: 16px;
+        border-radius: 20px;
+        border: 3px solid var(--text);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow-sm);
+      }
+      .state-banner--calm { background: #dff9ff; } /* 冰淇淋蓝 */
+      
+      .state-info h2 { font-size: 20px; font-weight: 900; color: var(--text); }
+      .state-info p { font-size: 13px; color: var(--text-muted); margin-top: 4px; font-weight: bold; }
+      
+      .state-score {
+        text-align: right;
+      }
+      .state-score .score-num {
+        font-size: 42px;
+        font-weight: 900;
+        line-height: 1;
+        color: #2ecc71;
+        text-shadow: 2px 2px 0px var(--text);
+      }
+      .state-score .score-label {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+
+      .video-box {
+        height: 180px;
+        background: #e0f4ff;
+        border: 3px solid var(--text);
+        border-radius: 20px;
+        position: relative;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+      }
+      .video-box::before {
+        content: "📺";
+        font-size: 48px;
+        opacity: 0.7;
+      }
+      .video-box .video-tag {
+        position: absolute;
+        left: 12px;
+        bottom: 12px;
+        background: #ff7675;
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
+        border: 2px solid var(--text);
+      }
+
+      /* 2x2 指标网格布局 */
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .metric-card {
+        padding: 14px;
+        border-radius: 18px;
+        border: 3px solid var(--text);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 105px;
+        background: var(--surface);
+        box-shadow: var(--shadow-sm);
+      }
+      .metric-card--feeding { background: #ddfaeb; }
+      .metric-card--crying { background: #ffeaa7; } /* 换成活力黄黄的 */
+      .metric-card--sleeping { background: #f3e5f5; }
+      .metric-card--safety { background: #ffe4e6; }
+      
+      .metric-label { font-size: 13px; font-weight: 900; color: var(--text); }
+      .metric-value { font-size: 26px; font-weight: 900; margin: 4px 0; color: var(--text); }
+      .metric-detail { font-size: 11px; color: var(--text-muted); font-weight: bold; }
+
+      /* 时间流事件列表 */
+      .event-feed {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .event-strip {
+        border: 3px solid var(--text);
+        border-radius: 14px;
+        padding: 12px;
+        background: var(--surface);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 0px rgba(74, 55, 40, 0.1);
+      }
+      .event-strip--safety { background: #fff0f5; }
+      .event-strip--crying { background: #ffebe9; }
+      .event-strip--highlight { background: #fffde6; }
+      
+      .event-main h4 { font-size: 15px; font-weight: 900; }
+      .event-main p { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-weight: bold; }
+      
+      .event-meta {
+        text-align: right;
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 800;
+      }
+      .status-badge {
+        font-size: 11px;
+        font-weight: 900;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: #e5dfd8;
+        color: var(--text);
+        border: 2px solid var(--text);
+        display: inline-block;
+        margin-bottom: 4px;
+      }
+      .status-badge--pending { background: #ffb03b; color: #fff; }
+      
+      .btn-mini {
+        padding: 6px 12px;
+        background: #2ecc71;
+        color: #fff;
+        border: 2px solid var(--text);
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
+        cursor: pointer;
+        box-shadow: 0 3px 0 var(--text);
+      }
+
+      /* ==================== SCREEN: 趋势 ==================== */
+      .chart-container {
+        padding: 8px 0;
+        width: 100%;
+      }
+      .svg-chart {
+        width: 100%;
+        height: 160px;
+        display: block;
+      }
+      
+      .composition-box {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 10px 0;
+      }
+      .donut-chart {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: conic-gradient(var(--happy) 0% 8%, var(--calm) 8% 100%);
+        display: grid;
+        place-items: center;
+        position: relative;
+        border: 3px solid var(--text);
+      }
+      .donut-chart::after {
+        content: "";
+        width: 64px;
+        height: 64px;
+        background: var(--surface);
+        border-radius: 50%;
+        position: absolute;
+        border: 3px solid var(--text);
+      }
+      .donut-chart span {
+        position: relative;
+        z-index: 2;
+        font-size: 26px;
+        font-weight: 900;
+        color: var(--text);
+      }
+      
+      .legend-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 14px;
+        font-weight: 900;
+      }
+      .legend-marker {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text);
+      }
+      .color-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        border: 2px solid var(--text);
+      }
+
+      /* ==================== SCREEN: 记录 ==================== */
+      .sub-tabs {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 4px;
+      }
+      .sub-tab-btn {
+        background: var(--surface);
+        border: 3px solid var(--text);
+        padding: 10px;
+        border-radius: 14px;
+        text-align: center;
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
+      }
+      .sub-tab-btn span { display: block; font-size: 12px; color: var(--text-muted); font-weight: 800; }
+      .sub-tab-btn strong { display: block; font-size: 22px; margin-top: 2px; font-weight: 900; }
+      .sub-tab-btn.active { background: #ffeba4; }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 6px;
+      }
+      .form-label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 900;
+        color: var(--text);
+      }
+      .form-input {
+        width: 100%;
+        padding: 12px;
+        border: 3px solid var(--text);
+        border-radius: 12px;
+        font-size: 14px;
+        background: #fffdf9;
+        font-weight: bold;
+      }
+      .form-row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .btn-submit {
+        background: #ffb03b;
+        color: var(--text);
+        border: 3px solid var(--text);
+        padding: 14px;
+        font-weight: 900;
+        border-radius: 14px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 6px;
+        text-align: center;
+        box-shadow: 0 4px 0 var(--text);
+      }
+      .btn-submit:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 var(--text);
+      }
+
+      .log-timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .log-card {
+        padding: 12px;
+        border: 3px solid var(--text);
+        border-radius: 14px;
+        background: var(--surface-muted);
+      }
+      .log-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        font-weight: 800;
+      }
+      .log-card h5 { font-size: 16px; font-weight: 900; color: var(--text); }
+
+      /* ==================== SCREEN: 高光 ==================== */
+      .photo-waterfall {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+      }
+      .photo-tile {
+        background: var(--surface);
+        border: 3px solid var(--text);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+      }
+      .placeholder-img {
+        width: 100%;
+        background: linear-gradient(135deg, #fff9db, #dbeafe);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text);
+        font-weight: 900;
+        font-size: 14px;
+        border-bottom: 3px solid var(--text);
+      }
+      .photo-tile:nth-child(1) .placeholder-img { height: 140px; }
+      .photo-tile:nth-child(2) .placeholder-img { height: 180px; }
+      
+      .photo-desc {
+        padding: 12px;
+      }
+      .photo-desc h4 { font-size: 14px; font-weight: 900; }
+      .photo-desc p { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-weight: bold; }
+      .photo-desc time { font-size: 11px; color: var(--text-muted); display: block; margin-top: 8px; font-weight: 800; }
+
+      /* ==================== SCREEN: 安全 ==================== */
+      .safety-alert-box {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .safety-row-card {
+        border: 3px solid var(--text);
+        border-radius: 18px;
+        padding: 14px;
+        background: var(--surface);
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        box-shadow: var(--shadow-sm);
+      }
+      .safety-row-card.confirmed {
+        opacity: 0.65;
+        background: #f0eae1;
+        box-shadow: none;
+      }
+      .safety-thumb {
+        width: 68px;
+        height: 68px;
+        border-radius: 12px;
+        background: #ffe4e6;
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+        font-size: 24px;
+        border: 3px solid var(--text);
+      }
+      .safety-detail-block {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .safety-top-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+      .safety-detail-block h4 { font-size: 16px; font-weight: 900; }
+      .safety-detail-block p { font-size: 13px; color: var(--text-muted); margin-top: 2px; line-height: 1.5; font-weight: bold; }
+      
+      .safety-action-bar {
+        margin-top: 10px;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      /* ==================== 底部固定导航栏 ==================== */
+      .bottom-nav {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 76px;
+        background: #ffffff;
+        border-top: 3px solid var(--text);
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        z-index: 100;
+        padding-bottom: env(safe-area-inset-bottom, 0);
+      }
+      
+      .nav-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        color: var(--text);
+        font-size: 12px;
+        font-weight: 900;
+        cursor: pointer;
+      }
+
+      .nav-icon-wrapper {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font-size: 16px;
+        font-weight: 900;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+      }
+
+      /* 底部导航激活联动 */
+      #nav-today:checked ~ .phone-container .bottom-nav label[for="nav-today"],
+      #nav-trend:checked ~ .phone-container .bottom-nav label[for="nav-trend"],
+      #nav-records:checked ~ .phone-container .bottom-nav label[for="nav-records"],
+      #nav-highlights:checked ~ .phone-container .bottom-nav label[for="nav-highlights"],
+      #nav-safety:checked ~ .phone-container .bottom-nav label[for="nav-safety"] {
+        color: #ffb03b;
+      }
+
+      #nav-today:checked ~ .phone-container .bottom-nav label[for="nav-today"] .nav-icon-wrapper,
+      #nav-trend:checked ~ .phone-container .bottom-nav label[for="nav-trend"] .nav-icon-wrapper,
+      #nav-records:checked ~ .phone-container .bottom-nav label[for="nav-records"] .nav-icon-wrapper,
+      #nav-highlights:checked ~ .phone-container .bottom-nav label[for="nav-highlights"] .nav-icon-wrapper,
+      #nav-safety:checked ~ .phone-container .bottom-nav label[for="nav-safety"] .nav-icon-wrapper {
+        background: #ffb03b;
+        color: var(--text);
+        border-color: var(--text);
+        transform: translateY(-4px) scale(1.1);
+      }
+    </style>
+  </head>
+  <body>
+    <input type="radio" id="nav-today" name="app-tab" checked />
+    <input type="radio" id="nav-trend" name="app-tab" />
+    <input type="radio" id="nav-records" name="app-tab" />
+    <input type="radio" id="nav-highlights" name="app-tab" />
+    <input type="radio" id="nav-safety" name="app-tab" />
+
+    <div class="phone-container">
+      
+      <div class="system-bar">
+        <span>14:00</span>
+        <span>🍼 宝贝守护中...</span>
+      </div>
+
+      <header class="app-header">
+        <span class="eyebrow">Baby Monitor Prototype</span>
+        <h1>婴儿舒适状态监测</h1>
+      </header>
+
+      <main class="app-content">
+        
+        <div class="screen" id="screen-today">
+          <div class="hero-section">
+            <div class="state-banner state-banner--calm">
+              <div class="state-info">
+                <h2>平稳舒适 ✨</h2>
+                <p>当前以平静状态为主哦</p>
+              </div>
+              <div class="state-score">
+                <div class="score-num">76</div>
+                <div class="score-label">舒适指数</div>
+              </div>
+            </div>
+            
+            <div class="video-box">
+              <span class="video-tag">🔴 实时监控画面</span>
+            </div>
+          </div>
+
+          <section class="metric-grid" aria-label="今日概览">
+            <article class="metric-card metric-card--feeding">
+              <span class="metric-label">🍼 今日进食</span>
+              <strong class="metric-value">3 次</strong>
+              <span class="metric-detail">妈妈刚刚更新过</span>
+            </article>
+            <article class="metric-card metric-card--crying">
+              <span class="metric-label">😭 哭闹次数</span>
+              <strong class="metric-value">2 次</strong>
+              <span class="metric-detail">包含独立声音事件</span>
+            </article>
+            <article class="metric-card metric-card--sleeping">
+              <span class="metric-label">💤 睡眠时间</span>
+              <strong class="metric-value">2h 5m</strong>
+              <span class="metric-detail">小天使睡得很香</span>
+            </article>
+            <article class="metric-card metric-card--safety">
+              <span class="metric-label">🚨 安全防护</span>
+              <strong class="metric-value">3 次</strong>
+              <span class="metric-detail">1 个异常待确认</span>
+            </article>
+          </section>
+
+          <section class="panel">
+            <h3 class="panel-title">最近小事件</h3>
+            <div class="event-feed">
+              <article class="event-strip event-strip--safety">
+                <div class="event-main">
+                  <h4>口鼻遮挡 ⚠️</h4>
+                  <p>区域被遮挡持续 12 秒</p>
+                </div>
+                <div class="event-meta">
+                  <span class="status-badge status-badge--pending">去确认</span>
+                  <div>14:36</div>
+                </div>
+              </article>
+              <article class="event-strip event-strip--crying">
+                <div class="event-main">
+                  <h4>连续哭闹 😢</h4>
+                  <p>持续哭闹 25 秒已自动记录</p>
+                </div>
+                <div class="event-meta">
+                  <div>13:12</div>
+                </div>
+              </article>
+              <article class="event-strip event-strip--highlight">
+                <div class="event-main">
+                  <h4>开心高光 🥰</h4>
+                  <p>捕捉到持续微笑，已存相册</p>
+                </div>
+                <div class="event-meta">
+                  <div>12:20</div>
+                </div>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <div class="screen" id="screen-trend">
+          <section class="panel">
+            <h3 class="panel-title">24小时成长走势</h3>
+            <p class="panel-subtitle">舒适状态指数按小时连续记录变化</p>
+            <div class="chart-container">
+              <svg class="svg-chart" viewBox="0 0 320 160">
+                <line x1="20" y1="20" x2="20" y2="130" stroke="#4a3728" stroke-width="3" stroke-dasharray="4,4"/>
+                <line x1="20" y1="130" x2="300" y2="130" stroke="#4a3728" stroke-width="3"/>
+                <path d="M 20 100 Q 60 85 90 105 T 160 60 T 230 40 T 300 50" fill="none" stroke="#6baed6" stroke-width="5" stroke-linecap="round"/>
+                <circle cx="230" cy="40" r="8" fill="#ffb03b" stroke="#4a3728" stroke-width="3"/>
+                <text x="230" y="20" font-size="12" font-weight="900" fill="#4a3728" text-anchor="middle">14:00 (77分) ⭐</text>
+              </svg>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h3 class="panel-title">14:00 情绪小饼图</h3>
+            <p class="panel-subtitle">实时区间情绪详细百分比构成</p>
+            <div class="composition-box">
+              <div class="donut-chart">
+                <span>77</span>
+              </div>
+              <div class="legend-list">
+                <div class="legend-item">
+                  <span class="legend-marker"><i class="color-dot" style="background:var(--happy)"></i>☀️ 开心</span>
+                  <span>8%</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-marker"><i class="color-dot" style="background:var(--calm)"></i>🌸 平静</span>
+                  <span>92%</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-marker"><i class="color-dot" style="background:var(--crying)"></i>💧 哭闹</span>
+                  <span>0%</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="screen" id="screen-records">
+          <div class="sub-tabs">
+            <div class="sub-tab-btn active"><span>🍼 进食</span><strong>3</strong></div>
+            <div class="sub-tab-btn"><span>💤 睡眠</span><strong>2</strong></div>
+            <div class="sub-tab-btn"><span>😭 哭闹</span><strong>1</strong></div>
+          </div>
+
+          <section class="panel">
+            <h3 class="panel-title">添加进食小脚印</h3>
+            <form class="form-group" onsubmit="return false;">
+              <label class="form-label">
+                记录标题
+                <input class="form-input" type="text" value="吨吨吨喝奶" required />
+              </label>
+              <label class="form-label">
+                备忘小贴纸
+                <input class="form-input" type="text" placeholder="例如：配方奶、换尿布后缓解" />
+              </label>
+              <div class="form-row-2">
+                <label class="form-label">
+                  奶量 (ml)
+                  <input class="form-input" type="number" placeholder="可选" />
+                </label>
+                <label class="form-label">
+                  时长 (分钟)
+                  <input class="form-input" type="number" placeholder="可选" />
+                </label>
+              </div>
+              <button type="button" class="btn-submit">做个记号 🚀</button>
+            </form>
+          </section>
+
+          <section class="panel">
+            <h3 class="panel-title">今日喂养历史</h3>
+            <div class="log-timeline">
+              <div class="log-card">
+                <div class="log-header"><span>🍼 瓶喂 · 配方奶</span><time>15:10</time></div>
+                <h5>90 ml</h5>
+              </div>
+              <div class="log-card">
+                <div class="log-header"><span>🤱 亲喂母乳</span><time>11:20</time></div>
+                <h5>12 分钟 <small style="font-weight:bold; color:var(--text-muted);">(右侧)</small></h5>
+              </div>
+              <div class="log-card">
+                <div class="log-header"><span>🍼 瓶喂 · 配方奶</span><time>07:45</time></div>
+                <h5>110 ml</h5>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="screen" id="screen-highlights">
+          <section class="panel" style="background:transparent; border:none; padding:0; box-shadow:none;">
+            <h3 class="panel-title" style="margin-bottom:14px;">开心抓拍墙 📸</h3>
+            <div class="photo-waterfall">
+              <div class="photo-tile">
+                <div class="placeholder-img"><span>👶 治愈系微笑</span></div>
+                <div class="photo-desc">
+                  <h4>开心高光 🥰</h4>
+                  <p>持续微笑自动存档</p>
+                  <time>07/05 12:20</time>
+                </div>
+              </div>
+              <div class="photo-tile">
+                <div class="placeholder-img"><span>✨ 伸个懒腰</span></div>
+                <div class="photo-desc">
+                  <h4>清醒互动 🧸</h4>
+                  <p>清醒时段表情放松</p>
+                  <time>07/05 08:18</time>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="screen" id="screen-safety">
+          <section class="metric-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="metric-card metric-card--feeding" style="background:#ffe4e6;">
+              <span class="metric-label">⚠️ 异常提示</span>
+              <strong class="metric-value">3 次</strong>
+              <span class="metric-detail">已识别口鼻/呛咳</span>
+            </div>
+            <div class="metric-card" style="background:#fff9db;">
+              <span class="metric-label">🔔 待确认风险</span>
+              <strong class="metric-value" style="color:var(--pending)">1 个</strong>
+              <span class="metric-detail">需要爸爸妈妈看下</span>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h3 class="panel-title">安全事件中心</h3>
+            <div class="safety-alert-box">
+              <article class="safety-row-card">
+                <div class="safety-thumb">📸</div>
+                <div class="safety-detail-block">
+                  <div class="safety-top-meta">
+                    <span class="status-badge status-badge--pending">需确认</span>
+                    <time style="font-size:11px; color:var(--text-muted); font-weight:800;">14:36</time>
+                  </div>
+                  <h4>口鼻遮挡</h4>
+                  <p>检测到口鼻区域被异物遮挡持续 12 秒。</p>
+                  <div class="safety-action-bar">
+                    <button class="btn-mini">我知道了</button>
+                  </div>
+                </div>
+              </article>
+
+              <article class="safety-row-card confirmed">
+                <div class="safety-thumb">🔊</div>
+                <div class="safety-detail-block">
+                  <div class="safety-top-meta">
+                    <span class="status-badge">已确认</span>
+                    <time style="font-size:11px; color:var(--text-muted); font-weight:800;">09:42</time>
+                  </div>
+                  <h4>疑似呛咳</h4>
+                  <p>异常声纹识别匹配疑似呛咳，持续 8 秒。</p>
+                </div>
+              </article>
+
+              <article class="safety-row-card confirmed">
+                <div class="safety-thumb">📸</div>
+                <div class="safety-detail-block">
+                  <div class="safety-top-meta">
+                    <span class="status-badge">已确认</span>
+                    <time style="font-size:11px; color:var(--text-muted); font-weight:800;">03:12</time>
+                  </div>
+                  <h4>口鼻遮挡</h4>
+                  <p>检测到被子拉高发生面部遮挡，已及时处理。</p>
+                </div>
+              </article>
+            </div>
+          </section>
+        </div>
+
+      </main>
+
+      <nav class="bottom-nav" aria-label="移动端主导航">
+        <label for="nav-today" class="nav-label">
+          <div class="nav-icon-wrapper">☀️</div>
+          今日
+        </label>
+        <label for="nav-trend" class="nav-label">
+          <div class="nav-icon-wrapper">📈</div>
+          趋势
+        </label>
+        <label for="nav-records" class="nav-label">
+          <div class="nav-icon-wrapper">📝</div>
+          记录
+        </label>
+        <label for="nav-highlights" class="nav-label">
+          <div class="nav-icon-wrapper">🌈</div>
+          高光
+        </label>
+        <label for="nav-safety" class="nav-label">
+          <div class="nav-icon-wrapper">🛡️</div>
+          安全
+        </label>
+      </nav>
+
+    </div>
+  </body>
+</html>

@@ -5,8 +5,8 @@ export function SafetyPage(state) {
   return `
     <section class="page page--safety">
       <section class="metric-grid metric-grid--two">
-        ${MetricCard({ label: '安全事件次数', value: state.safetyStats.total, detail: '口鼻遮挡与疑似呛咳', tone: 'safety' })}
-        ${MetricCard({ label: '待确认事件', value: state.safetyStats.pending, detail: '家长确认后更新', tone: 'pending' })}
+        ${MetricCard({ label: '⚠️ 异常提示', value: `${state.safetyStats.total} 次`, detail: '已识别口鼻遮挡与呛咳', tone: 'safety' })}
+        ${MetricCard({ label: '🔔 待确认风险', value: `${state.safetyStats.pending} 个`, detail: '需要家长看一下', tone: 'pending' })}
       </section>
 
       <section class="panel">

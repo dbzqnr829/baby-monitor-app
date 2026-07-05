@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Baby Monitor Redesign Preview V1</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #eef3f6;
+        --phone: #f8faf9;
+        --surface: #ffffff;
+        --surface-2: #f1f5f6;
+        --ink: #182333;
+        --muted: #667386;
+        --line: #dce5e8;
+        --blue: #4f8fbd;
+        --blue-soft: #e7f3fb;
+        --amber: #e3a13a;
+        --amber-soft: #fff1d8;
+        --red: #d8645b;
+        --red-soft: #fde9e6;
+        --green: #4d916b;
+        --green-soft: #e5f3eb;
+        --violet: #6d78bd;
+        --violet-soft: #eaecfb;
+        --rose: #b85262;
+        --rose-soft: #fae7ea;
+        --shadow: 0 18px 48px rgba(32, 48, 62, 0.16);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Microsoft YaHei", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        background:
+          linear-gradient(180deg, #f7fafb 0%, var(--canvas) 100%);
+        color: var(--ink);
+      }
+
+      input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .stage {
+        min-height: 100vh;
+        display: grid;
+        place-items: start center;
+        padding: 24px 12px 42px;
+      }
+
+      .phone {
+        width: min(430px, 100%);
+        min-height: 860px;
+        overflow: hidden;
+        border: 1px solid rgba(24, 35, 51, 0.16);
+        border-radius: 8px;
+        background: var(--phone);
+        box-shadow: var(--shadow);
+      }
+
+      .topbar {
+        padding: 18px 18px 12px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.74)),
+          var(--phone);
+        border-bottom: 1px solid rgba(220, 229, 232, 0.8);
+      }
+
+      .status-row,
+      .section-head,
+      .event-head,
+      .mini-row,
+      .timeline-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .time {
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .device-state {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .app-title {
+        margin-top: 16px;
+      }
+
+      .app-title span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+        letter-spacing: 0;
+      }
+
+      h1 {
+        margin-top: 4px;
+        font-size: 28px;
+        line-height: 34px;
+      }
+
+      h2 {
+        font-size: 20px;
+        line-height: 26px;
+      }
+
+      h3 {
+        font-size: 16px;
+        line-height: 22px;
+      }
+
+      p {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 22px;
+      }
+
+      .nav {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+        padding: 8px 10px 10px;
+        background: rgba(255, 255, 255, 0.86);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .nav label {
+        min-height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      #tab-today:checked ~ .stage .nav label[for="tab-today"],
+      #tab-trend:checked ~ .stage .nav label[for="tab-trend"],
+      #tab-records:checked ~ .stage .nav label[for="tab-records"],
+      #tab-highlights:checked ~ .stage .nav label[for="tab-highlights"],
+      #tab-safety:checked ~ .stage .nav label[for="tab-safety"] {
+        background: var(--ink);
+        color: #fff;
+      }
+
+      .screen {
+        display: none;
+        gap: 14px;
+        padding: 14px;
+      }
+
+      #tab-today:checked ~ .stage .screen--today,
+      #tab-trend:checked ~ .stage .screen--trend,
+      #tab-records:checked ~ .stage .screen--records,
+      #tab-highlights:checked ~ .stage .screen--highlights,
+      #tab-safety:checked ~ .stage .screen--safety {
+        display: grid;
+      }
+
+      .hero {
+        display: grid;
+        gap: 12px;
+        padding: 18px;
+        border: 1px solid rgba(79, 143, 189, 0.28);
+        border-radius: 8px;
+        background:
+          linear-gradient(135deg, rgba(231, 243, 251, 0.96), rgba(255, 241, 216, 0.86)),
+          var(--surface);
+      }
+
+      .score-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+        gap: 12px;
+      }
+
+      .score {
+        font-size: 56px;
+        font-weight: 900;
+        line-height: 56px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--ink);
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .camera {
+        position: relative;
+        min-height: 158px;
+        overflow: hidden;
+        border: 1px solid rgba(79, 143, 189, 0.22);
+        border-radius: 8px;
+        background:
+          linear-gradient(135deg, rgba(79, 143, 189, 0.18), rgba(230, 161, 58, 0.12)),
+          #e9eff1;
+      }
+
+      .camera::before {
+        content: "";
+        position: absolute;
+        width: 124px;
+        height: 124px;
+        right: 24px;
+        top: 18px;
+        border: 18px solid rgba(255, 255, 255, 0.64);
+        border-radius: 50%;
+        background: rgba(79, 143, 189, 0.16);
+      }
+
+      .camera-label {
+        position: absolute;
+        left: 16px;
+        bottom: 14px;
+        display: grid;
+        gap: 4px;
+      }
+
+      .camera-label strong {
+        font-size: 18px;
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .metric {
+        min-height: 120px;
+        display: grid;
+        align-content: space-between;
+        gap: 12px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .metric small {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 32px;
+        line-height: 34px;
+      }
+
+      .metric p {
+        font-size: 13px;
+        line-height: 18px;
+      }
+
+      .metric--green {
+        background: var(--green-soft);
+      }
+
+      .metric--red {
+        background: var(--red-soft);
+      }
+
+      .metric--violet {
+        background: var(--violet-soft);
+      }
+
+      .metric--rose {
+        background: var(--rose-soft);
+      }
+
+      .panel {
+        display: grid;
+        gap: 14px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .event-list,
+      .timeline,
+      .safety-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .event,
+      .record,
+      .safety-card,
+      .photo-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .event,
+      .record {
+        display: grid;
+        gap: 6px;
+        padding: 12px;
+      }
+
+      .event {
+        border-left: 5px solid var(--blue);
+      }
+
+      .event--amber {
+        border-left-color: var(--amber);
+      }
+
+      .event--red {
+        border-left-color: var(--red);
+      }
+
+      .event time,
+      .record time,
+      .safety-card time,
+      .photo-card time {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .trend-card {
+        padding: 16px;
+      }
+
+      .chart {
+        width: 100%;
+        height: 188px;
+      }
+
+      .axis {
+        stroke: var(--line);
+        stroke-width: 1.5;
+      }
+
+      .line {
+        fill: none;
+        stroke: var(--blue);
+        stroke-width: 4;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .point {
+        fill: #fff;
+        stroke: var(--blue);
+        stroke-width: 3;
+      }
+
+      .point--hot {
+        fill: var(--amber);
+        stroke: var(--ink);
+      }
+
+      .composition {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        align-items: center;
+        gap: 18px;
+      }
+
+      .donut {
+        width: 150px;
+        aspect-ratio: 1;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: conic-gradient(var(--amber) 0 38%, var(--blue) 38% 74%, var(--red) 74% 100%);
+        box-shadow: inset 0 0 0 1px rgba(24, 35, 51, 0.08);
+      }
+
+      .donut span {
+        width: 86px;
+        aspect-ratio: 1;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--surface);
+        font-size: 30px;
+        font-weight: 900;
+      }
+
+      .legend {
+        display: grid;
+        gap: 10px;
+      }
+
+      .legend span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--blue);
+      }
+
+      .dot--amber {
+        background: var(--amber);
+      }
+
+      .dot--red {
+        background: var(--red);
+      }
+
+      .record-tabs {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+
+      .record-tab {
+        min-height: 84px;
+        display: grid;
+        align-content: center;
+        gap: 6px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .record-tab:first-child {
+        border-color: var(--ink);
+      }
+
+      .record-tab span {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .record-tab strong {
+        font-size: 24px;
+        line-height: 26px;
+      }
+
+      .quick-form {
+        display: grid;
+        gap: 10px;
+      }
+
+      .field {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface-2);
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .button {
+        min-height: 44px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--ink);
+        color: #fff;
+        font-weight: 900;
+      }
+
+      .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .photo-card {
+        overflow: hidden;
+      }
+
+      .photo {
+        min-height: 136px;
+        background:
+          linear-gradient(135deg, rgba(79, 143, 189, 0.28), rgba(230, 161, 58, 0.18)),
+          #dfe8eb;
+      }
+
+      .photo--tall {
+        min-height: 188px;
+      }
+
+      .photo-body {
+        display: grid;
+        gap: 4px;
+        padding: 10px;
+      }
+
+      .safety-summary {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .safety-summary .metric {
+        min-height: 104px;
+      }
+
+      .safety-card {
+        display: grid;
+        grid-template-columns: 76px 1fr;
+        gap: 12px;
+        padding: 10px;
+      }
+
+      .thumb {
+        height: 76px;
+        border-radius: 8px;
+        background:
+          linear-gradient(135deg, rgba(184, 82, 98, 0.22), rgba(79, 143, 189, 0.14)),
+          #edf1f3;
+      }
+
+      .safety-body {
+        display: grid;
+        gap: 5px;
+      }
+
+      .status {
+        justify-self: start;
+        min-height: 24px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 8px;
+        border-radius: 999px;
+        background: var(--amber-soft);
+        color: #8a5d17;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      @media (max-width: 420px) {
+        .stage {
+          padding: 0;
+        }
+
+        .phone {
+          min-height: 100vh;
+          border: 0;
+          border-radius: 0;
+        }
+
+        .composition {
+          grid-template-columns: 130px 1fr;
+          gap: 12px;
+        }
+
+        .donut {
+          width: 130px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <input id="tab-today" name="screen" type="radio" checked />
+    <input id="tab-trend" name="screen" type="radio" />
+    <input id="tab-records" name="screen" type="radio" />
+    <input id="tab-highlights" name="screen" type="radio" />
+    <input id="tab-safety" name="screen" type="radio" />
+
+    <main class="stage">
+      <div class="phone">
+        <header class="topbar">
+          <div class="status-row">
+            <span class="time">14:00</span>
+            <span class="device-state">摄像头在线 · 本地记录</span>
+          </div>
+          <div class="app-title">
+            <span>Baby Comfort Monitor</span>
+            <h1>宝宝状态</h1>
+          </div>
+        </header>
+
+        <nav class="nav" aria-label="页面">
+          <label for="tab-today">今日</label>
+          <label for="tab-trend">趋势</label>
+          <label for="tab-records">记录</label>
+          <label for="tab-highlights">高光</label>
+          <label for="tab-safety">安全</label>
+        </nav>
+
+        <section class="screen screen--today">
+          <section class="hero">
+            <div class="section-head">
+              <div>
+                <h2>今日舒适状态</h2>
+                <p>当前平稳，最近 2 小时数据完整。</p>
+              </div>
+              <span class="pill">舒适</span>
+            </div>
+            <div class="score-row">
+              <strong class="score">77</strong>
+              <span class="pill">14:00</span>
+            </div>
+          </section>
+
+          <div class="camera">
+            <div class="camera-label">
+              <strong>实时监控画面</strong>
+              <p>已连接卧室摄像头</p>
+            </div>
+          </div>
+
+          <section class="metric-grid" aria-label="今日概览">
+            <article class="metric metric--green">
+              <small>今日进食</small>
+              <strong>3</strong>
+              <p>手动记录</p>
+            </article>
+            <article class="metric metric--red">
+              <small>哭闹次数</small>
+              <strong>2</strong>
+              <p>含独立哭闹事件</p>
+            </article>
+            <article class="metric metric--violet">
+              <small>睡眠时间</small>
+              <strong>2 小时 5 分钟</strong>
+              <p>手动记录</p>
+            </article>
+            <article class="metric metric--rose">
+              <small>安全事件</small>
+              <strong>3</strong>
+              <p>1 个待确认</p>
+            </article>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <h2>最近事件</h2>
+              <span class="pill">4 条</span>
+            </div>
+            <div class="event-list">
+              <article class="event event--amber">
+                <div class="event-head">
+                  <h3>微笑高光</h3>
+                  <time>13:42</time>
+                </div>
+                <p>自动保存了一张值得回顾的开心照片。</p>
+              </article>
+              <article class="event event--red">
+                <div class="event-head">
+                  <h3>短暂哭闹</h3>
+                  <time>12:18</time>
+                </div>
+                <p>持续 3 分钟，之后恢复平静。</p>
+              </article>
+            </div>
+          </section>
+        </section>
+
+        <section class="screen screen--trend">
+          <section class="panel trend-card">
+            <div class="section-head">
+              <div>
+                <h2>24 小时趋势</h2>
+                <p>舒适状态指数按小时展示。</p>
+              </div>
+              <span class="pill">77 分</span>
+            </div>
+            <svg class="chart" viewBox="0 0 360 188" role="img" aria-label="舒适状态趋势图">
+              <path class="axis" d="M24 150H340" />
+              <path class="axis" d="M24 116H340" />
+              <path class="axis" d="M24 82H340" />
+              <path class="axis" d="M24 48H340" />
+              <path class="line" d="M30 126 C64 110 80 94 112 103 C148 114 160 74 194 82 C226 90 238 52 270 58 C302 64 316 46 338 56" />
+              <circle class="point" cx="30" cy="126" r="6" />
+              <circle class="point" cx="112" cy="103" r="6" />
+              <circle class="point" cx="194" cy="82" r="6" />
+              <circle class="point point--hot" cx="270" cy="58" r="7" />
+              <circle class="point" cx="338" cy="56" r="6" />
+            </svg>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <div>
+                <h2>14:00 情绪构成</h2>
+                <p>开心、平静与哭闹占比。</p>
+              </div>
+            </div>
+            <div class="composition">
+              <div class="donut"><span>77</span></div>
+              <div class="legend">
+                <span><i class="dot dot--amber"></i>开心 38%</span>
+                <span><i class="dot"></i>平静 36%</span>
+                <span><i class="dot dot--red"></i>哭闹 26%</span>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="screen screen--records">
+          <section class="record-tabs">
+            <article class="record-tab">
+              <span>进食</span>
+              <strong>3</strong>
+            </article>
+            <article class="record-tab">
+              <span>睡眠</span>
+              <strong>2</strong>
+            </article>
+            <article class="record-tab">
+              <span>哭闹</span>
+              <strong>1</strong>
+            </article>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <h2>快速记录</h2>
+              <span class="pill">进食</span>
+            </div>
+            <div class="quick-form">
+              <div class="field"><span>时间</span><strong>14:00</strong></div>
+              <div class="field"><span>类型</span><strong>奶瓶</strong></div>
+              <div class="field"><span>备注</span><strong>120ml</strong></div>
+              <button class="button" type="button">保存记录</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <h2>最近记录</h2>
+              <span class="pill">倒序</span>
+            </div>
+            <div class="timeline">
+              <article class="record">
+                <div class="timeline-row">
+                  <h3>进食 · 奶瓶</h3>
+                  <time>13:50</time>
+                </div>
+                <p>120ml，状态平稳。</p>
+              </article>
+              <article class="record">
+                <div class="timeline-row">
+                  <h3>睡眠</h3>
+                  <time>11:30</time>
+                </div>
+                <p>持续 2 小时 5 分钟。</p>
+              </article>
+            </div>
+          </section>
+        </section>
+
+        <section class="screen screen--highlights">
+          <section class="panel">
+            <div class="section-head">
+              <div>
+                <h2>高光照片</h2>
+                <p>自动保留值得回顾的开心时刻。</p>
+              </div>
+              <span class="pill">6 张</span>
+            </div>
+          </section>
+
+          <section class="photo-grid">
+            <article class="photo-card">
+              <div class="photo photo--tall"></div>
+              <div class="photo-body">
+                <h3>午后微笑</h3>
+                <time>13:42</time>
+              </div>
+            </article>
+            <article class="photo-card">
+              <div class="photo"></div>
+              <div class="photo-body">
+                <h3>醒后平静</h3>
+                <time>10:16</time>
+              </div>
+            </article>
+            <article class="photo-card">
+              <div class="photo"></div>
+              <div class="photo-body">
+                <h3>互动回应</h3>
+                <time>09:32</time>
+              </div>
+            </article>
+            <article class="photo-card">
+              <div class="photo photo--tall"></div>
+              <div class="photo-body">
+                <h3>睡醒伸展</h3>
+                <time>08:48</time>
+              </div>
+            </article>
+          </section>
+        </section>
+
+        <section class="screen screen--safety">
+          <section class="safety-summary">
+            <article class="metric metric--rose">
+              <small>安全事件</small>
+              <strong>3</strong>
+              <p>1 个待确认</p>
+            </article>
+            <article class="metric">
+              <small>待确认</small>
+              <strong>1</strong>
+              <p>家长确认后更新</p>
+            </article>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <h2>安全事件</h2>
+              <span class="pill">倒序</span>
+            </div>
+            <div class="safety-list">
+              <article class="safety-card">
+                <div class="thumb"></div>
+                <div class="safety-body">
+                  <div class="event-head">
+                    <h3>口鼻遮挡疑似</h3>
+                    <time>13:18</time>
+                  </div>
+                  <p>检测到短暂遮挡，等待确认。</p>
+                  <span class="status">待确认</span>
+                </div>
+              </article>
+              <article class="safety-card">
+                <div class="thumb"></div>
+                <div class="safety-body">
+                  <div class="event-head">
+                    <h3>离床边缘接近</h3>
+                    <time>11:06</time>
+                  </div>
+                  <p>已确认，无需进一步处理。</p>
+                  <span class="status">已确认</span>
+                </div>
+              </article>
+            </div>
+          </section>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>

@@ -641,11 +641,29 @@ button {
     font-size: 13px;
   }
 
-  .metric-grid,
-  .metric-grid--two,
-  .record-tabs,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .metric-grid,
+  .metric-grid--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .metric-card {
+    min-height: 132px;
+    padding: 14px;
+  }
+
+  .record-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .record-tab {
+    min-height: 88px;
+    padding: 14px 12px;
   }
 
   .event-card {

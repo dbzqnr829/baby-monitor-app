@@ -17,11 +17,11 @@ export function EmotionPieChart({ hourlyScore }) {
       <div class="panel__title-row">
         <div>
           <h2>${String(hourlyScore.hour).padStart(2, '0')}:00 情绪构成</h2>
-          <p>舒适状态指数 ${hourlyScore.score} 分 · 数据覆盖率 ${hourlyScore.coverage}%</p>
+          <p>舒适状态指数 ${hourlyScore.score} 分</p>
         </div>
       </div>
       <div class="composition">
-        <div class="donut" style="--happy:${percentages.happy}; --calm:${percentages.calm}; --crying:${percentages.crying};">
+        <div class="donut" style="--happy-percent:${percentages.happy}; --calm-percent:${percentages.calm}; --crying-percent:${percentages.crying};">
           <span>${hourlyScore.score}</span>
         </div>
         <div class="composition__legend">

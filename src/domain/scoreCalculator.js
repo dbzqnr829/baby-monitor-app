@@ -127,7 +127,7 @@ export function getCurrentStateDescription(hourlyScore) {
   const percentages = getEmotionPercentages(hourlyScore.composition);
   const leadingEmotion = Object.entries(percentages).sort((a, b) => b[1] - a[1])[0][0];
 
-  return `当前以${EMOTION_LABELS[leadingEmotion]}状态为主，数据覆盖率 ${hourlyScore.coverage}%。`;
+  return `当前以${EMOTION_LABELS[leadingEmotion]}状态为主。`;
 }
 
 function countEmotions(samples) {

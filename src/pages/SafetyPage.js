@@ -13,7 +13,6 @@ export function SafetyPage(state) {
         <div class="panel__title-row">
           <div>
             <h1>安全事件中心</h1>
-            <p>当前版本只保留待确认和已确认状态，暂不发送警报。</p>
           </div>
         </div>
         <div class="safety-list">

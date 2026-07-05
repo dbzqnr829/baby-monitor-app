@@ -1,7 +1,7 @@
-import { MetricCard } from '../components/MetricCard.js';
+import { MetricCard } from '../components/MetricCard.js?v=20260705-pie';
 import { EventList } from '../components/EventList.js';
 import { formatDuration } from '../services/formatters.js';
-import { getCurrentStateDescription } from '../domain/scoreCalculator.js';
+import { getCurrentStateDescription } from '../domain/scoreCalculator.js?v=20260705-pie';
 import { EMOTION_LABELS } from '../domain/types.js';
 
 export function TodayPage(state) {
@@ -31,9 +31,9 @@ export function TodayPage(state) {
       </div>
 
       <section class="metric-grid" aria-label="今日概览">
-        ${MetricCard({ label: '今日进食次数', value: state.metrics.feedingCount, detail: '手动记录', tone: 'feeding' })}
-        ${MetricCard({ label: '哭闹次数', value: state.metrics.cryingCount, detail: '含独立哭闹事件', tone: 'crying' })}
-        ${MetricCard({ label: '睡眠时间', value: formatDuration(state.metrics.sleepingMinutes), detail: '手动记录', tone: 'sleeping' })}
+        ${MetricCard({ label: '今日进食次数', value: state.metrics.feedingCount, detail: '', tone: 'feeding' })}
+        ${MetricCard({ label: '哭闹次数', value: state.metrics.cryingCount, detail: '', tone: 'crying' })}
+        ${MetricCard({ label: '睡眠时间', value: formatDuration(state.metrics.sleepingMinutes), detail: '', tone: 'sleeping' })}
         ${MetricCard({ label: '安全事件次数', value: state.metrics.safetyCount, detail: `${state.safetyStats.pending} 个待确认`, tone: 'safety' })}
       </section>
 
@@ -41,7 +41,6 @@ export function TodayPage(state) {
         <div class="panel__title-row">
           <div>
             <h2>最近事件</h2>
-            <p>高光时刻、安全事件和哭闹按时间倒序排列。</p>
           </div>
         </div>
         ${EventList({ events: state.recentEvents })}

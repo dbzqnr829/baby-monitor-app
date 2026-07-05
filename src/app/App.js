@@ -1,9 +1,9 @@
 import { Navigation } from './navigation.js';
-import { TodayPage } from '../pages/TodayPage.js';
-import { TrendPage } from '../pages/TrendPage.js';
-import { RecordPage } from '../pages/RecordPage.js';
-import { HighlightsPage } from '../pages/HighlightsPage.js';
-import { SafetyPage } from '../pages/SafetyPage.js';
+import { TodayPage } from '../pages/TodayPage.js?v=20260705-pie';
+import { TrendPage } from '../pages/TrendPage.js?v=20260705-pie';
+import { RecordPage } from '../pages/RecordPage.js?v=20260705-pie';
+import { HighlightsPage } from '../pages/HighlightsPage.js?v=20260705-pie';
+import { SafetyPage } from '../pages/SafetyPage.js?v=20260705-pie';
 import { store } from '../store/babyMonitorStore.js';
 import { loadMockData, startMockRealtimeFeed } from '../services/dataFeed.js';
 
@@ -72,7 +72,7 @@ app.addEventListener('submit', (event) => {
 
   store.addManualRecord({
     type: data.get('type'),
-    title: data.get('title') || '手动记录',
+    title: data.get('title') || '记录',
     note: data.get('note') || '',
     amountMl: Number(data.get('amountMl')) || undefined,
     durationMinutes: Number(data.get('durationMinutes')) || undefined,

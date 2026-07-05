@@ -1,5 +1,5 @@
 import { ScoreChart } from '../components/ScoreChart.js';
-import { EmotionPieChart } from '../components/EmotionPieChart.js';
+import { EmotionPieChart } from '../components/EmotionPieChart.js?v=20260705-pie';
 
 export function TrendPage(state) {
   const selectedScore = state.hourlyScores.find((hour) => hour.hour === state.selectedHour);

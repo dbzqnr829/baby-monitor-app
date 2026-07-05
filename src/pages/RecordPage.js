@@ -49,7 +49,6 @@ export function RecordPage(state) {
           <div class="panel__title-row">
             <div>
               <h2>今日${MANUAL_RECORD_LABELS[activeType]}记录</h2>
-              <p>最近记录显示在最上方。</p>
             </div>
           </div>
           ${

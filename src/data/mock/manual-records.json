@@ -1,0 +1,50 @@
+[
+  {
+    "id": "manual-feed-003",
+    "type": "feeding",
+    "timestamp": "2026-07-05T15:10:00+08:00",
+    "title": "瓶喂",
+    "note": "配方奶",
+    "amountMl": 90
+  },
+  {
+    "id": "manual-sleep-002",
+    "type": "sleeping",
+    "timestamp": "2026-07-05T13:40:00+08:00",
+    "title": "午睡",
+    "note": "睡眠较安稳",
+    "durationMinutes": 75
+  },
+  {
+    "id": "manual-cry-001",
+    "type": "crying",
+    "timestamp": "2026-07-05T12:58:00+08:00",
+    "title": "哭闹",
+    "note": "换尿布后缓解",
+    "durationMinutes": 6
+  },
+  {
+    "id": "manual-feed-002",
+    "type": "feeding",
+    "timestamp": "2026-07-05T11:20:00+08:00",
+    "title": "母乳",
+    "note": "右侧 12 分钟",
+    "durationMinutes": 12
+  },
+  {
+    "id": "manual-sleep-001",
+    "type": "sleeping",
+    "timestamp": "2026-07-05T09:05:00+08:00",
+    "title": "上午小睡",
+    "note": "入睡快",
+    "durationMinutes": 50
+  },
+  {
+    "id": "manual-feed-001",
+    "type": "feeding",
+    "timestamp": "2026-07-05T07:45:00+08:00",
+    "title": "瓶喂",
+    "note": "配方奶",
+    "amountMl": 110
+  }
+]
